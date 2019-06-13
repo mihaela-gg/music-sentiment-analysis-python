@@ -7,10 +7,9 @@ root = Tk()
 def predictSong():
     textInput = songText.get("1.0", "end-1c")
     print(textInput)
-    result = predictMNBrunner(textInput)[0]
+    result = predictMNBrunnerText(textInput)[0]
     print(result)
     predictionLabel.config(text="Result: " + result)
-
 
 topFrame = Frame(root)
 topFrame.pack()

@@ -30,21 +30,27 @@ x_test = vectorizer.transform(x_test)
 
 
 def runMNB():
-    MNB(x_train, y_train, x_test, y_test)
+    return MNB(x_train, y_train, x_test, y_test)
 
 
 def runSVM():
-    SVM(x_train, y_train, x_test, y_test)
+    return SVM(x_train, y_train, x_test, y_test)
 
 
 def runDTC():
-    DTC(x_train, y_train, x_test, y_test)
+    return DTC(x_train, y_train, x_test, y_test)
 
 
-def predictMNBrunner(text):
+def predictMNBrunnerText(text):
     text = pre_process_data_text(text)
-    print(text)
     vectorText = vectorizer.transform([text])
+    return predictMNB(x_train, y_train, vectorText)
+
+
+def predictMNBrunnerVector(vector):
+    for i in range(0, vector.__len__()):
+        vector[i] = pre_process_data_text(vector[i])
+    vectorText = vectorizer.transform(vector)
     return predictMNB(x_train, y_train, vectorText)
 
 

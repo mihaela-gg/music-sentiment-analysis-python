@@ -70,5 +70,5 @@ def pre_process_data_text(text):
     text = remove_punctuation(text)
     text = remove_non_letters_digits(text)
     text = remove_stop_words(text)
-    text = stemming(text)
+    text = lemmatization(text)
     return text
