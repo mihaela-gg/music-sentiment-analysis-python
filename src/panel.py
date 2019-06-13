@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 from src.runner import *
 
 
@@ -11,7 +12,7 @@ class Root(Tk):
         super(Root, self).__init__()
         self.title("Music sentiment analysis")
         self.minsize(700, 700)
-        self.wm_iconbitmap('resources/icon.ico')
+        self.wm_iconbitmap("resources/icon.ico")
 
         # add buttons for ML algorithms
 
@@ -49,11 +50,11 @@ class Root(Tk):
 
 
     def classifyalbum(self):
-        self.labelAlbumName = ttk.Label(self.albumTitle, text="Album name")
+        self.labelAlbumName = ttk.Label(self.albumTitle, text="Album")
         self.labelAlbumName.grid(column=1, row=6)
         self.inputAlbumName = ttk.Entry(self.albumTitle)
         self.inputAlbumName.grid(column=2, row=6)
-        self.labelSingerName = ttk.Label(self.albumTitle, text="Singer name")
+        self.labelSingerName = ttk.Label(self.albumTitle, text="Singer/Band")
         self.labelSingerName.grid(column=1, row=7)
         self.inputSingerName = ttk.Entry(self.albumTitle)
         self.inputSingerName.grid(column=2, row=7)
@@ -67,14 +68,14 @@ class Root(Tk):
         self.fileNames = filedialog.askopenfilenames(initialdir="/Desktop", title="Select .txt files",
                                                filetypes=(("txt", "*.txt"), ("All files", "*.*")))
         for fileName in self.fileNames:
-            lyric = open(fileName, 'r').read()
+            lyric = open(fileName, "r").read()
             self.lyrics.append(lyric)
 
         results = predictMNBrunnerVector(self.lyrics)
         noPositive = 0
         noNegative = 0
         for result in results:
-            if result == 'positive':
+            if result == "positive":
                 noPositive += 1
             else:
                 noNegative += 1
@@ -89,19 +90,72 @@ class Root(Tk):
     def classification(self):
         self.mnbbutton = ttk.Button(self.classificationTitle, text="Run MNB", command=self.runMNBGui)
         self.mnbbutton.grid(column=1, row=11)
-        self.svmbutton = ttk.Button(self.classificationTitle, text="Run SVM", command=runSVM)
+        self.svmbutton = ttk.Button(self.classificationTitle, text="Run SVM", command=self.runSVMGui)
         self.svmbutton.grid(column=2, row=11)
-        self.dtcbutton = ttk.Button(self.classificationTitle, text="Run DTC", command=runDTC)
+        self.dtcbutton = ttk.Button(self.classificationTitle, text="Run DTC", command=self.runDTCGui)
         self.dtcbutton.grid(column=3, row=11)
-        self.algorithmResult = ttk.Label(self.classificationTitle, text="")
-        self.algorithmResult.grid(column=2, row=12)
 
 
     def runMNBGui(self):
-        result = runMNB()
-        self.algorithmResult.configure(text=result)
+        prediction = predictMNB(x_train, y_train, x_test)
+        self.showPredictions(prediction)
 
 
-if __name__ == '__main__':
+    def runSVMGui(self):
+        prediction = predictSVM(x_train, y_train, x_test)
+        self.showPredictions(prediction)
+
+
+    def runDTCGui(self):
+        prediction = predictDTC(x_train, y_train, x_test)
+        self.showPredictions(prediction)
+
+
+    def showPredictions(self, prediction):
+        confusionMatrix = confusion_matrix(y_test, prediction)
+        accuracy = round(accuracy_score(y_test, prediction) * 100, 2)
+        precisionPos = round(precision_score(y_test, prediction, average="binary", pos_label="positive"), 2)
+        precisionNeg = round(precision_score(y_test, prediction, average="binary", pos_label="negative"), 2)
+        recallPos = round(recall_score(y_test, prediction, average="binary", pos_label="positive"), 2)
+        recallNeg = round(recall_score(y_test, prediction, average="binary", pos_label="negative"), 2)
+        f1Pos = round(f1_score(y_test, prediction, average="binary", pos_label="positive"), 2)
+        f1Neg = round(f1_score(y_test, prediction, average="binary", pos_label="negative"),2)
+
+        # show confusion matrix
+        self.labelConfusionMatrix = ttk.Label(self.classificationTitle, text="Confusion matrix:")
+        self.labelConfusionMatrix.grid(column=1, row=12)
+        self.treeConfusionMatrix = ttk.Treeview(self.classificationTitle, height=2)
+        self.treeConfusionMatrix["columns"] = ("negative", "positive")
+        self.treeConfusionMatrix.column("#0", width=50, minwidth=50)
+        self.treeConfusionMatrix.column("negative", width=50, minwidth=50)
+        self.treeConfusionMatrix.column("positive", width=50, minwidth=50)
+        self.treeConfusionMatrix.heading("negative", text="-")
+        self.treeConfusionMatrix.heading("positive", text="+")
+        self.treeConfusionMatrix.insert("", 1, text="-", values=(confusionMatrix[1][0], confusionMatrix[1][1]))
+        self.treeConfusionMatrix.insert("", 2, text="+", values=(confusionMatrix[0][0], confusionMatrix[0][1]))
+        self.treeConfusionMatrix.grid(column=2, row=12)
+
+        # show accuracy
+        self.labelAccuracy = ttk.Label(self.classificationTitle, text="Accuracy: " + accuracy.__str__())
+        self.labelAccuracy.grid(column=2, row=13)
+
+        # show classification report
+        self.labelClassificatonReport = ttk.Label(self.classificationTitle, text="Classification report")
+        self.labelClassificatonReport.grid(column=1, row=14)
+        self.treeClassificationReport = ttk.Treeview(self.classificationTitle, height=2)
+        self.treeClassificationReport["columns"] = ("precision", "recall", "f1score")
+        self.treeClassificationReport.column("#0", width=70, minwidth=70)
+        self.treeClassificationReport.column("precision", width=70, minwidth=70)
+        self.treeClassificationReport.column("recall", width=70, minwidth=70)
+        self.treeClassificationReport.column("f1score", width=70, minwidth=70)
+        self.treeClassificationReport.heading("precision", text="Precision")
+        self.treeClassificationReport.heading("recall", text="Recall")
+        self.treeClassificationReport.heading("f1score", text="F1-score")
+        self.treeClassificationReport.insert("", 1, text="-", values=(precisionNeg, recallNeg, f1Neg))
+        self.treeClassificationReport.insert("", 2, text="+", values=(precisionPos, recallPos, f1Pos))
+        self.treeClassificationReport.grid(column=2, row=14)
+
+
+if __name__ == "__main__":
     root = Root()
     root.mainloop()

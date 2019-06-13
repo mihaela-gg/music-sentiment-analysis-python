@@ -2,8 +2,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 
 
 def MNB(x_train, y_train, x_test, y_test):
@@ -24,9 +23,7 @@ def MNB(x_train, y_train, x_test, y_test):
 
 
 def SVM(x_train, y_train, x_test, y_test):
-    svm = SVC(random_state=101)
-    svm.fit(x_train, y_train)
-    predsvm = svm.predict(x_test)
+    predsvm = predictSVM(x_train, y_train, x_test)
     confusionMatrix = confusion_matrix(y_test, predsvm)
     accuracy = round(accuracy_score(y_test, predsvm) * 100, 2)
     classificationReport = classification_report(y_test, predsvm)
@@ -43,9 +40,7 @@ def SVM(x_train, y_train, x_test, y_test):
 
 
 def DTC(x_train, y_train, x_test, y_test):
-    dtc = DecisionTreeClassifier()
-    dtc.fit(x_train, y_train)
-    preddtc = dtc.predict(x_test)
+    preddtc = predictDTC(x_train, y_train, x_test)
     confusionMatrix = confusion_matrix(y_test, preddtc)
     accuracy = round(accuracy_score(y_test, preddtc) * 100, 2)
     classificationReport = classification_report(y_test, preddtc)
@@ -73,3 +68,10 @@ def predictSVM(x_train, y_train, text):
     svm.fit(x_train, y_train)
     prediction = svm.predict(text)
     return prediction
+
+
+def predictDTC(x_train, y_train, text):
+    dtc = DecisionTreeClassifier()
+    dtc.fit(x_train, y_train)
+    preddtc = dtc.predict(text)
+    return preddtc
