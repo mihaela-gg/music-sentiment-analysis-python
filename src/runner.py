@@ -25,18 +25,6 @@ x_train = vectorizer.transform(x_train)
 x_test = vectorizer.transform(x_test)
 
 
-def runMNB():
-    return MNB(x_train, y_train, x_test, y_test)
-
-
-def runSVM():
-    return SVM(x_train, y_train, x_test, y_test)
-
-
-def runDTC():
-    return DTC(x_train, y_train, x_test, y_test)
-
-
 def predictMNBrunnerText(text):
     text = pre_process_data_text(text)
     print(text)
