@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from PIL import ImageTk, Image
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 from src.runner import *
 
@@ -10,11 +11,14 @@ class Root(Tk):
 
     def __init__(self):
         super(Root, self).__init__()
+        self.configure(background="#ECECEC")
         self.title("Music sentiment analysis")
         self.minsize(700, 700)
         self.wm_iconbitmap("resources/icon.ico")
 
-        # add buttons for ML algorithms
+        # result images
+        self.positiveImg = ImageTk.PhotoImage(Image.open("resources/happy.png").resize((40, 40)))
+        self.negativeImg = ImageTk.PhotoImage(Image.open("resources/sad.png").resize((40, 40)))
 
         # classify one song
         self.songTitle = ttk.LabelFrame(self, text="Classify one song")
@@ -44,9 +48,15 @@ class Root(Tk):
     def predictsong(self):
         textInput = self.songText.get("1.0", "end-1c")
         result = predictMNBrunnerText(textInput)[0]
-        self.resultLabel = ttk.Label(self.songTitle, text="")
-        self.resultLabel.grid(column=2, row=4)
-        self.resultLabel.configure(text="Sentiment: " + result)
+        self.resultLabel = ttk.Label(self.songTitle, text="Sentiment: ")
+        self.resultLabel.grid(column=1, row=4)
+        self.resultImageSong = ttk.Label(self.songTitle, text="")
+        self.resultImageSong.grid(column=2, row=4)
+        if result == "positive":
+            self.resultImageSong.configure(image=self.positiveImg)
+        else:
+            self.resultImageSong.configure(image=self.negativeImg)
+
 
 
     def classifyalbum(self):
@@ -79,12 +89,14 @@ class Root(Tk):
                 noPositive += 1
             else:
                 noNegative += 1
-        self.albumResult = ttk.Label(self.albumTitle, text="")
-        self.albumResult.grid(column=2, row=9)
+        self.albumResult = ttk.Label(self.albumTitle, text="Sentiment: ")
+        self.albumResult.grid(column=1, row=9)
+        self.resultImage = ttk.Label(self.albumTitle, text="")
+        self.resultImage.grid(column=2, row=9)
         if noPositive >= noNegative:
-            self.albumResult.configure(text="Sentiment: positive")
+            self.resultImage.configure(image=self.positiveImg)
         else:
-            self.albumResult.configure(text="Sentiment: negative")
+            self.resultImage.configure(image=self.negativeImg)
 
 
     def classification(self):
